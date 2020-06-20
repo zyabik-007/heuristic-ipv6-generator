@@ -189,7 +189,7 @@ def log(text):
     f.close()
 
 
-if False:
+if True:
     subsets = readPrefixes(FILE_PREFIX_LIST)
     for ip in subsets:
         ip = '2402:e100::/32'

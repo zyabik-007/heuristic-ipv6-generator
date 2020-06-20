@@ -1,1 +1,0 @@
-20-06-2020_22_31_13 nmap -p 80 -6 -iL out/WordAdresses.txt -oN outNmap/output_WordAdresses.txt_20-06-2020_22_31_13.txt

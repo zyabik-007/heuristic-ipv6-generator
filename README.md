@@ -5,6 +5,14 @@
   - Python 3
   
   - Internet access through IPV6 for scanning
+
+# PIP dependings
+
+- datetime
+
+- os
+
+- ipaddress  
  
 # Description
 

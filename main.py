@@ -311,17 +311,17 @@ ports = [80]
 if args.ports != None:
     ports = args.ports.split(",")
 
-# if args.clearOutput != None:
-#     clear(OUT_DIRECTORY)
+if args.clearOutput != None:
+    clear(OUT_DIRECTORY)
 
-# if args.clearOutputNmap != None:
-#     clear(OUT_NMAP_DIRECTORY)
+if args.clearOutputNmap != None:
+    clear(OUT_NMAP_DIRECTORY)
 
-# if args.geneareMacAdresses != None:
-#     geneareMacAdresses()
+if args.geneareMacAdresses != None:
+    geneareMacAdresses()
 
-# if args.parseDomain != None:
-#     parseDomain(FILE_DOMAINS, OUT_DIRECTORY + "addressesFromDomain.txt")
+if args.parseDomain != None:
+    parseDomain(FILE_DOMAINS, OUT_DIRECTORY + "addressesFromDomain.txt")
 prefixes = readPrefixes(FILE_PREFIX_LIST)
 for prefix in prefixes:
     global dateDime
@@ -329,13 +329,13 @@ for prefix in prefixes:
     os.mkdir(OUT_DIRECTORY + dateDime)
     os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
     dateDime = dateDime + "/"
-    # if args.wordAdresses != None:
-    #     generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY+ dateDime + "WordAdresses.txt")
-    #     executeNamp(OUT_DIRECTORY+ dateDime + "WordAdresses.txt", ports)
+    if args.wordAdresses != None:
+        generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY+ dateDime + "WordAdresses.txt")
+        executeNamp(OUT_DIRECTORY+ dateDime + "WordAdresses.txt", ports)
 
-    # if args.macInIpv6 != None:
-    #     generateMacInIpv6(prefix, DATA_DIRECTORY+ dateDime + "mac.txt", OUT_DIRECTORY+ dateDime + "MacInIpv6.txt")
-    #     executeNamp(OUT_DIRECTORY+ dateDime + "MacInIpv6.txt", ports)
+    if args.macInIpv6 != None:
+        generateMacInIpv6(prefix, DATA_DIRECTORY+ dateDime + "mac.txt", OUT_DIRECTORY+ dateDime + "MacInIpv6.txt")
+        executeNamp(OUT_DIRECTORY+ dateDime + "MacInIpv6.txt", ports)
 
     if args.servicePort != None:
         generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")
@@ -345,6 +345,6 @@ for prefix in prefixes:
         generateLowbyte(prefix, OUT_DIRECTORY + dateDime + "Lowbyte.txt")
         executeNamp(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
 
-    # if args.ipv4InIpv6 != None:
-    #     generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
-    #     executeNamp(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)
+    if args.ipv4InIpv6 != None:
+        generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
+        executeNamp(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)

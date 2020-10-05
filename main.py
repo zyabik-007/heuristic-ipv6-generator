@@ -245,7 +245,7 @@ threads = []
 
 def getAAAARecord(domain):
     try:
-        result = dns.resolver.query(domain, 'AAAA')
+        result = dns.resolver.resolve(domain, 'AAAA')
         if result[0]:
             while True:
                 if flag == False:

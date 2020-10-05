@@ -138,6 +138,7 @@ def mac2eui64(mac, prefix=None):
 
 
 def executeNamp(fileNameIn, ports):
+    return False
     # if not os.path.exists(OUT_NMAP_DIRECTORY):
     #     os.makedirs(OUT_NMAP_DIRECTORY)
 
@@ -304,6 +305,7 @@ parser.add_argument("-geneareMacAdresses", nargs='*', help="Generate domain temp
 parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
 # -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
+# -wordAdresses -servicePort -lowbyte -ipv4InIpv6
 args = parser.parse_args()
 log("start program")
 log("start program", "test.log")

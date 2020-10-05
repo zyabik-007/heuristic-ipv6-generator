@@ -138,10 +138,10 @@ def mac2eui64(mac, prefix=None):
 
 
 def executeNamp(fileNameIn, ports):
-    if not os.path.exists(OUT_NMAP_DIRECTORY):
-        os.makedirs(OUT_NMAP_DIRECTORY)
+    # if not os.path.exists(OUT_NMAP_DIRECTORY):
+    #     os.makedirs(OUT_NMAP_DIRECTORY)
 
-    output = OUT_NMAP_DIRECTORY + dateDime + "output_" + fileNameIn.split("/")[-1] + "_" + getDateTime() + ".txt"
+    output = OUT_NMAP_DIRECTORY + "output_" + fileNameIn.split("/")[-1] + "_.txt"
     command = "nmap -p " + ','.join([str(i) for i in ports]) + " -6 -iL " + fileNameIn + " -oN " + output
     log(command)
     os.system(command)
@@ -303,7 +303,7 @@ parser.add_argument("-ports", nargs='?', help="List of ports 80,443")
 parser.add_argument("-geneareMacAdresses", nargs='*', help="Generate domain template")
 parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
-
+# -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
 args = parser.parse_args()
 log("start program")
 log("start program", "test.log")
@@ -325,17 +325,18 @@ if args.parseDomain != None:
 prefixes = readPrefixes(FILE_PREFIX_LIST)
 for prefix in prefixes:
     global dateDime
-    dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
-    os.mkdir(OUT_DIRECTORY + dateDime)
-    os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
-    dateDime = dateDime + "/"
+    # dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
+    dateDime = ''
+    # os.mkdir(OUT_DIRECTORY + dateDime)
+    # os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
+    # dateDime = dateDime + "/"
     if args.wordAdresses != None:
-        generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY+ dateDime + "WordAdresses.txt")
-        executeNamp(OUT_DIRECTORY+ dateDime + "WordAdresses.txt", ports)
+        generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + dateDime + "WordAdresses.txt")
+        executeNamp(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
 
     if args.macInIpv6 != None:
-        generateMacInIpv6(prefix, DATA_DIRECTORY+ dateDime + "mac.txt", OUT_DIRECTORY+ dateDime + "MacInIpv6.txt")
-        executeNamp(OUT_DIRECTORY+ dateDime + "MacInIpv6.txt", ports)
+        generateMacInIpv6(prefix, DATA_DIRECTORY + dateDime + "mac.txt", OUT_DIRECTORY + dateDime + "MacInIpv6.txt")
+        executeNamp(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
 
     if args.servicePort != None:
         generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")

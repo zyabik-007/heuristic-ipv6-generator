@@ -6,7 +6,7 @@ import ipaddress
 import argparse
 import dns.resolver
 
-COUNT_TO_WRITE = 1000
+COUNT_TO_WRITE = 100
 
 OUT_NMAP_DIRECTORY = "outNmap/"
 OUT_DIRECTORY = "out/"
@@ -245,7 +245,7 @@ threads = []
 
 def getAAAARecord(domain):
     try:
-        result = dns.resolver.resolve(domain, 'AAAA')
+        result = dns.resolver.query(domain, 'AAAA')
         if result[0]:
             while True:
                 if flag == False:
@@ -264,17 +264,23 @@ def parseDomain(fileNameIn, fileNameOut):
     domain = f.readline().rstrip('\n')
     i = 0
     while domain:
-        i += 1
-        if (len(outDomains) > COUNT_TO_WRITE):
-            flag = True
-            writeToFile(outDomains, fileNameOut)
-            outDomains = []
-            flag = False
-            i = 0
-        x = threading.Thread(target=getAAAARecord, args=(domain,))
-        x.start()
-        threads.append(x)
-        domain = f.readline().rstrip('\n')
+        if (len(threads) <= 1000):
+            i += 1
+            if (len(outDomains) > COUNT_TO_WRITE):
+                flag = True
+                writeToFile(outDomains, fileNameOut)
+                outDomains = []
+                flag = False
+                i = 0
+            x = threading.Thread(target=getAAAARecord, args=(domain,))
+            x.start()
+            threads.append(x)
+            domain = f.readline().rstrip('\n')
+            print(len(threads))
+            for idx, val in enumerate(threads):
+                if val.isAlive() == False:
+                    threads.pop(idx)
+
     f.close()
     writeToFile(outDomains, fileNameOut)
     for th in threads:
@@ -305,6 +311,7 @@ parser.add_argument("-geneareMacAdresses", nargs='*', help="Generate domain temp
 parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
 # -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
+# -wordAdresses -servicePort -lowbyte -ipv4InIpv6
 # -wordAdresses -servicePort -lowbyte -ipv4InIpv6
 args = parser.parse_args()
 log("start program")

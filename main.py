@@ -263,10 +263,12 @@ def parseDomain(fileNameIn, fileNameOut):
     f = open(fileNameIn)
     domain = f.readline().rstrip('\n')
     i = 0
+    progress = 0
     while domain:
         if (len(threads) <= 1000):
             i += 1
-            print('i=' + str(i))
+            if progress % 1000 == 0:
+                print('progress=' + str(progress))
             if (len(outDomains) > COUNT_TO_WRITE):
                 print('writeToFile')
                 flag = True
@@ -276,6 +278,7 @@ def parseDomain(fileNameIn, fileNameOut):
                 i = 0
             x = threading.Thread(target=getAAAARecord, args=(domain,))
             x.start()
+            progress += 1
             threads.append(x)
             domain = f.readline().rstrip('\n')
             for idx, val in enumerate(threads):

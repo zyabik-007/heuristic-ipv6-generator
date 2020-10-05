@@ -266,7 +266,10 @@ def parseDomain(fileNameIn, fileNameOut):
     while domain:
         if (len(threads) <= 1000):
             i += 1
+            if i % 1000 == 0:
+                print('i=' + i)
             if (len(outDomains) > COUNT_TO_WRITE):
+                print('writeToFile')
                 flag = True
                 writeToFile(outDomains, fileNameOut)
                 outDomains = []
@@ -276,7 +279,6 @@ def parseDomain(fileNameIn, fileNameOut):
             x.start()
             threads.append(x)
             domain = f.readline().rstrip('\n')
-            print(len(threads))
             for idx, val in enumerate(threads):
                 if val.isAlive() == False:
                     threads.pop(idx)

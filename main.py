@@ -266,8 +266,7 @@ def parseDomain(fileNameIn, fileNameOut):
     while domain:
         if (len(threads) <= 1000):
             i += 1
-            if i % 1000 == 0:
-                print('i=' + i)
+            print('i=' + i)
             if (len(outDomains) > COUNT_TO_WRITE):
                 print('writeToFile')
                 flag = True

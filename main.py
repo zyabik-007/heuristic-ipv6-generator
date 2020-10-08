@@ -143,6 +143,7 @@ def executeNmapPath(entryFileNameIn, pathDirOut, ports):
         [str(i) for i in
          ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s"
     log(command)
+    print(command)
     os.system(command)
 
 

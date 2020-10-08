@@ -165,13 +165,13 @@ def mac2eui64(mac, prefix=None):
 
 
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
-    nmapParameters = ''
-    if args.nmapParameters != None:
-        nmapParameters = args.nmapParameters[0]
-        nmapParameters = nmapParameters[2:-1]
+    # nmapParameters = ''
+    # if args.nmapParameters != None:
+        # nmapParameters = args.nmapParameters[0]
+        # nmapParameters = nmapParameters[2:-1]
     command = "nmap -p " + ','.join(
         [str(i) for i in
-         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 1000000 -T5" + nmapParameters
+         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 1000000 -T5 -sS"
 
     log(command)
     print(command)
@@ -373,7 +373,7 @@ parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
 parser.add_argument("-countToWrite", nargs='*', help="count buffer line to write to file")
 parser.add_argument("-nmapScan", nargs='*', help="-nmapScan <directory>   Nmap custom scan all files in directory ")
-parser.add_argument("-nmapParameters", nargs='*', help="Parameters to the nmap command, example: -nmapParameters '\-sS -T5'")
+# parser.add_argument("-nmapParameters", nargs='*', help="Parameters to the nmap command, example: -nmapParameters '\-sS -T5'")
 parser.add_argument("-executeNmap", nargs='*',
                     help="-executeNmap 0|1 scan ipv6 adress after generate? 0 - no, 1 - yes, default 0")
 parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")

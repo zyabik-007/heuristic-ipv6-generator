@@ -6,13 +6,14 @@ import ipaddress
 import argparse
 import dns.resolver
 
-COUNT_TO_WRITE = 100
+COUNT_TO_WRITE = 1000
 
 OUT_NMAP_DIRECTORY = "outNmap/"
 OUT_DIRECTORY = "out/"
 DATA_DIRECTORY = "data/"
 
 FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
+FILE_PREFIX_LIST = OUT_DIRECTORY + "addressesFromDomain.txt"
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains.txt"
@@ -137,15 +138,23 @@ def mac2eui64(mac, prefix=None):
     return ip
 
 
-def executeNamp(fileNameIn, ports):
-    return False
-    # if not os.path.exists(OUT_NMAP_DIRECTORY):
-    #     os.makedirs(OUT_NMAP_DIRECTORY)
-
-    output = OUT_NMAP_DIRECTORY + "output_" + fileNameIn.split("/")[-1] + "_.txt"
-    command = "nmap -p " + ','.join([str(i) for i in ports]) + " -6 -iL " + fileNameIn + " -oN " + output
+def executeNmapPath(entryFileNameIn, pathDirOut, ports):
+    command = "nmap -p " + ','.join(
+        [str(i) for i in ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name
     log(command)
     os.system(command)
+
+
+def executeNmap(fileNameIn, ports):
+    if args.executeNmap != None:
+        if args.executeNmap[0] == '1':
+            # if not os.path.exists(OUT_NMAP_DIRECTORY):
+            #     os.makedirs(OUT_NMAP_DIRECTORY)
+
+            output = OUT_NMAP_DIRECTORY + "output_" + fileNameIn.split("/")[-1] + "_.txt"
+            command = "nmap -p " + ','.join([str(i) for i in ports]) + " -6 -iL " + fileNameIn + " -oN " + output
+            log(command)
+            os.system(command)
 
 
 def getDateTime():
@@ -314,15 +323,31 @@ parser.add_argument("-ports", nargs='?', help="List of ports 80,443")
 parser.add_argument("-geneareMacAdresses", nargs='*', help="Generate domain template")
 parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
+parser.add_argument("-countToWrite", nargs='*', help="count buffer line to write to file")
+parser.add_argument("-nmapScan", nargs='*', help="-nmapScan <directory>   Nmap custom scan all files in directory ")
+parser.add_argument("-executeNmap", nargs='*',
+                    help="-executeNmap 0|1 scan ipv6 adress after generate? 0 - no, 1 - yes, default 0")
+
 # -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
 # -wordAdresses -servicePort -lowbyte -ipv4InIpv6
 # -wordAdresses -servicePort -lowbyte -ipv4InIpv6
+# grep -o "80/tcp open     http" outNmap.txt  | wc -l
+
 args = parser.parse_args()
 log("start program")
-log("start program", "test.log")
 ports = [80]
 if args.ports != None:
     ports = args.ports.split(",")
+
+if args.nmapScan != None:
+    nmapDirectoryIn = args.nmapScan[0]
+    entries = os.scandir(nmapDirectoryIn)
+    for entry in entries:
+        if entry.name != ".gitignore":
+            executeNmapPath(entry, OUT_NMAP_DIRECTORY, ports)
+
+if args.countToWrite != None:
+    COUNT_TO_WRITE = int(args.countToWrite[0])
 
 if args.clearOutput != None:
     clear(OUT_DIRECTORY)
@@ -345,20 +370,20 @@ for prefix in prefixes:
     # dateDime = dateDime + "/"
     if args.wordAdresses != None:
         generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + dateDime + "WordAdresses.txt")
-        executeNamp(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
+        executeNmap(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
 
     if args.macInIpv6 != None:
         generateMacInIpv6(prefix, DATA_DIRECTORY + dateDime + "mac.txt", OUT_DIRECTORY + dateDime + "MacInIpv6.txt")
-        executeNamp(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
+        executeNmap(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
 
     if args.servicePort != None:
         generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")
-        executeNamp(OUT_DIRECTORY + dateDime + "ServicePort.txt", ports)
+        executeNmap(OUT_DIRECTORY + dateDime + "ServicePort.txt", ports)
 
     if args.lowbyte != None:
         generateLowbyte(prefix, OUT_DIRECTORY + dateDime + "Lowbyte.txt")
-        executeNamp(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
+        executeNmap(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
 
     if args.ipv4InIpv6 != None:
         generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
-        executeNamp(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)
+        executeNmap(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)

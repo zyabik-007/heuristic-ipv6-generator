@@ -171,7 +171,7 @@ def executeNmapPath(entryFileNameIn, pathDirOut, ports):
     # nmapParameters = nmapParameters[2:-1]
     command = "nmap -p " + ','.join(
         [str(i) for i in
-         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 1000000 -T5 -sS"
+         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS"
 
     log(command)
     print(command)

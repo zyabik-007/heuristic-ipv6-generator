@@ -7,6 +7,7 @@ import argparse
 import dns.resolver
 
 COUNT_TO_WRITE = 1000
+LIMIT_GENERATION = float('inf')
 
 OUT_NMAP_DIRECTORY = "outNmap/"
 OUT_DIRECTORY = "out/"
@@ -18,20 +19,28 @@ FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains.txt"
 
+global allCount
+
 
 def generateSequenceAddresses(prefix, length, fileNameOut):
+    global allCount
     log("stat generateSequenceAddresses, prefix:" + str(prefix))
     length += 1
     out = []
-    i = 0
+    progress = 0
     ip = getIp(prefix)
     for a in range(length):
-        i += 1
-        if (a > COUNT_TO_WRITE):
+        if (progress > COUNT_TO_WRITE):
             writeToFile(out, fileNameOut)
             out = []
-            i = 0
+            if allCount >= LIMIT_GENERATION:
+                break
+            progress = 0
         out.append(ip + a)
+        progress = progress + 1
+        allCount += 1
+        if allCount >= LIMIT_GENERATION:
+            break
     writeToFile(out, fileNameOut)
     log("end generateSequenceAddresses, prefix:" + str(prefix))
 
@@ -82,6 +91,7 @@ def readPrefixes(fileName):
 
 
 def generateIpv4InIpv6(prefix, aLim=255, bLim=255, cLim=255, dLim=255, fileNameOut=""):
+    global allCount
     log("stat generateIpv4InIpv6, prefix:" + str(prefix))
     aLim += 1
     bLim += 1
@@ -95,6 +105,7 @@ def generateIpv4InIpv6(prefix, aLim=255, bLim=255, cLim=255, dLim=255, fileNameO
     ip.pop(5)
     ip.pop(4)
     ip = ":".join(ip)
+    flagBreak = False
     for a in range(aLim):
         for b in range(bLim):
             for c in range(cLim):
@@ -104,18 +115,30 @@ def generateIpv4InIpv6(prefix, aLim=255, bLim=255, cLim=255, dLim=255, fileNameO
                     if (i > COUNT_TO_WRITE):
                         writeToFile(out, fileNameOut)
                         out = []
+                        allCount += i
+                        if allCount >= LIMIT_GENERATION:
+                            flagBreak = True
+                            break
                         i = 0
+                if flagBreak:
+                    break
+            if flagBreak:
+                break
+        if flagBreak:
+            break
     writeToFile(out, fileNameOut)
     log("end generateIpv4InIpv6, prefix:" + str(prefix))
 
 
 def generateLowbyte(prefix, fileNameOut):
+    global allCount
     log("stat generateLowbyte, prefix:" + str(prefix))
     generateSequenceAddresses(prefix, 255, fileNameOut)
     log("end generateLowbyte, prefix:" + str(prefix))
 
 
 def generateServicePort(prefix, fileNameOut):
+    global allCount
     log("stat generateServicePort, prefix:" + str(prefix))
     out = []
     ports = [20, 21, 22, 23, 25, 53, 80, 8080, 110, 119, 123, 135, 139, 143, 161, 194, 443, 445, 993, 995, 1723, 3306,
@@ -123,6 +146,9 @@ def generateServicePort(prefix, fileNameOut):
     ip = getIp(prefix)
     for port in ports:
         out.append(ip + port)
+        allCount += 1
+        if allCount >= LIMIT_GENERATION:
+            break
     writeToFile(out, fileNameOut)
     log("end generateServicePort, prefix:" + str(prefix))
 
@@ -165,6 +191,7 @@ def getDateTime():
 
 
 def generateWordAdresses(prefix, fileNameIn, fileNameOut):
+    global allCount
     log("stat generateWordAdresses, prefix:" + str(prefix))
     f = open(fileNameIn)
     words = f.read().splitlines()
@@ -175,13 +202,23 @@ def generateWordAdresses(prefix, fileNameIn, fileNameOut):
     prefix = ":".join(ipParts)
     out = []
     i = 0
+    flagBreak = False
     for word1 in words:
         for word2 in words:
             if (i > COUNT_TO_WRITE):
                 writeToFile(out, fileNameOut)
                 out = []
+                allCount = allCount + i
+                if allCount >= LIMIT_GENERATION:
+                    flagBreak = True
+                    break
                 i = 0
             out.append(prefix + ":" + word1 + ":" + word2)
+            i += 1
+            if flagBreak:
+                break
+        if flagBreak:
+            break
     writeToFile(out, fileNameOut)
     f.close()
     log("end generateWordAdresses, prefix:" + str(prefix))
@@ -229,6 +266,7 @@ def getIp(prefix):
 
 
 def generateMacInIpv6(prefix, fileNameIn, fileNameOut):
+    global allCount
     log("stat generateMacInIpv6, prefix:" + str(prefix))
     f = open(fileNameIn)
     line = f.readline().rstrip('\n')
@@ -240,6 +278,9 @@ def generateMacInIpv6(prefix, fileNameIn, fileNameOut):
         if (i > COUNT_TO_WRITE):
             writeToFile(out, fileNameOut)
             out = []
+            allCount = allCount + i
+            if allCount >= LIMIT_GENERATION:
+                break
             i = 0
         mac = f.readline().rstrip('\n')
         out.append(mac2eui64(mac=mac, prefix=prefix))
@@ -307,7 +348,7 @@ def clear(dir):
     with os.scandir(dir) as entries:
         for entry in entries:
             if entry.is_file() or entry.is_symlink():
-                if entry.name != '.gitignore':
+                if entry.name != '.gitignore' or entry.name != 'addressesFromDomain.txt':
                     os.remove(entry.path)
             elif entry.is_dir():
                 shutil.rmtree(entry.path)
@@ -329,9 +370,10 @@ parser.add_argument("-countToWrite", nargs='*', help="count buffer line to write
 parser.add_argument("-nmapScan", nargs='*', help="-nmapScan <directory>   Nmap custom scan all files in directory ")
 parser.add_argument("-executeNmap", nargs='*',
                     help="-executeNmap 0|1 scan ipv6 adress after generate? 0 - no, 1 - yes, default 0")
+parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")
 
 # -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
-# -wordAdresses -servicePort -lowbyte -ipv4InIpv6
+# -wordAdresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6
 # -wordAdresses -servicePort -lowbyte -ipv4InIpv6
 # grep -o "80/tcp open     http" outNmap.txt  | wc -l
 
@@ -351,6 +393,9 @@ if args.nmapScan != None:
 if args.countToWrite != None:
     COUNT_TO_WRITE = int(args.countToWrite[0])
 
+if args.limitGenerate != None and int(args.limitGenerate[0]) > 0:
+    LIMIT_GENERATION = int(args.limitGenerate[0])
+
 if args.clearOutput != None:
     clear(OUT_DIRECTORY)
 
@@ -362,30 +407,47 @@ if args.geneareMacAdresses != None:
 
 if args.parseDomain != None:
     parseDomain(FILE_DOMAINS, OUT_DIRECTORY + "addressesFromDomain.txt")
+
+global prefixes
 prefixes = readPrefixes(FILE_PREFIX_LIST)
-for prefix in prefixes:
-    global dateDime
-    # dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
+
+
+def forPrefixes(method):
+    global allCount
     dateDime = ''
-    # os.mkdir(OUT_DIRECTORY + dateDime)
-    # os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
-    # dateDime = dateDime + "/"
-    if args.wordAdresses != None:
-        generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + dateDime + "WordAdresses.txt")
-        executeNmap(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
+    allCount = 0
+    for prefix in prefixes:
+        if method == 'WordAdresses':
+            if args.wordAdresses != None:
+                generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + dateDime + "WordAdresses.txt")
+                executeNmap(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
+        if method == 'MacInIpv6':
+            if args.macInIpv6 != None:
+                generateMacInIpv6(prefix, DATA_DIRECTORY + dateDime + "mac.txt",
+                                  OUT_DIRECTORY + dateDime + "MacInIpv6.txt")
+                executeNmap(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
+        if method == 'ServicePort':
+            if args.servicePort != None:
+                generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")
+                executeNmap(OUT_DIRECTORY + dateDime + "ServicePort.txt", ports)
+        if method == 'Lowbyte':
+            if args.lowbyte != None:
+                generateLowbyte(prefix, OUT_DIRECTORY + dateDime + "Lowbyte.txt")
+                executeNmap(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
+        if method == 'Ipv4InIpv6':
+            if args.ipv4InIpv6 != None:
+                generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
+                executeNmap(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)
+        if allCount >= LIMIT_GENERATION:
+            break
 
-    if args.macInIpv6 != None:
-        generateMacInIpv6(prefix, DATA_DIRECTORY + dateDime + "mac.txt", OUT_DIRECTORY + dateDime + "MacInIpv6.txt")
-        executeNmap(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
 
-    if args.servicePort != None:
-        generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")
-        executeNmap(OUT_DIRECTORY + dateDime + "ServicePort.txt", ports)
-
-    if args.lowbyte != None:
-        generateLowbyte(prefix, OUT_DIRECTORY + dateDime + "Lowbyte.txt")
-        executeNmap(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
-
-    if args.ipv4InIpv6 != None:
-        generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
-        executeNmap(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)
+forPrefixes('WordAdresses')
+forPrefixes('MacInIpv6')
+forPrefixes('ServicePort')
+forPrefixes('Lowbyte')
+forPrefixes('Ipv4InIpv6')
+# dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
+# os.mkdir(OUT_DIRECTORY + dateDime)
+# os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
+# dateDime = dateDime + "/"

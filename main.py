@@ -14,7 +14,7 @@ OUT_DIRECTORY = "out/"
 DATA_DIRECTORY = "data/"
 
 FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
-FILE_PREFIX_LIST = OUT_DIRECTORY + "addressesFromDomain.txt"
+# FILE_PREFIX_LIST = OUT_DIRECTORY + "addressesFromDomain.txt"
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains.txt"
@@ -167,8 +167,8 @@ def mac2eui64(mac, prefix=None):
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
     # nmapParameters = ''
     # if args.nmapParameters != None:
-        # nmapParameters = args.nmapParameters[0]
-        # nmapParameters = nmapParameters[2:-1]
+    # nmapParameters = args.nmapParameters[0]
+    # nmapParameters = nmapParameters[2:-1]
     command = "nmap -p " + ','.join(
         [str(i) for i in
          ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 1000000 -T5 -sS"
@@ -414,9 +414,6 @@ if args.geneareMacAdresses != None:
 if args.parseDomain != None:
     parseDomain(FILE_DOMAINS, OUT_DIRECTORY + "addressesFromDomain.txt")
 
-global prefixes
-prefixes = readPrefixes(FILE_PREFIX_LIST)
-
 
 def forPrefixes(method):
     global allCount
@@ -448,11 +445,14 @@ def forPrefixes(method):
             break
 
 
-forPrefixes('WordAdresses')
-forPrefixes('MacInIpv6')
-forPrefixes('ServicePort')
-forPrefixes('Lowbyte')
-forPrefixes('Ipv4InIpv6')
+global prefixes
+if args.wordAdresses != None or args.macInIpv6 != None or args.servicePort != None or args.lowbyte != None or args.ipv4InIpv6 != None:
+    prefixes = readPrefixes(FILE_PREFIX_LIST)
+    forPrefixes('WordAdresses')
+    forPrefixes('MacInIpv6')
+    forPrefixes('ServicePort')
+    forPrefixes('Lowbyte')
+    forPrefixes('Ipv4InIpv6')
 # dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
 # os.mkdir(OUT_DIRECTORY + dateDime)
 # os.mkdir(OUT_NMAP_DIRECTORY + dateDime)

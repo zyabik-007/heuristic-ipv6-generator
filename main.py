@@ -140,7 +140,8 @@ def mac2eui64(mac, prefix=None):
 
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
     command = "nmap -p " + ','.join(
-        [str(i) for i in ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name
+        [str(i) for i in
+         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s"
     log(command)
     os.system(command)
 

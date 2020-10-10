@@ -13,13 +13,16 @@ OUT_NMAP_DIRECTORY = "outNmap/"
 OUT_DIRECTORY = "out/"
 DATA_DIRECTORY = "data/"
 
-FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
-# FILE_PREFIX_LIST = OUT_DIRECTORY + "addressesFromDomain.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains.txt"
 
 global allCount
+global prefixes
+global threads
+threads = []
 
 
 def generateSequenceAddresses(prefix, length, fileNameOut):
@@ -165,14 +168,9 @@ def mac2eui64(mac, prefix=None):
 
 
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
-    # nmapParameters = ''
-    # if args.nmapParameters != None:
-    # nmapParameters = args.nmapParameters[0]
-    # nmapParameters = nmapParameters[2:-1]
     command = "nmap -p " + ','.join(
         [str(i) for i in
          ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS"
-
     log(command)
     print(command)
     os.system(command)
@@ -181,9 +179,6 @@ def executeNmapPath(entryFileNameIn, pathDirOut, ports):
 def executeNmap(fileNameIn, ports):
     if args.executeNmap != None:
         if args.executeNmap[0] == '1':
-            # if not os.path.exists(OUT_NMAP_DIRECTORY):
-            #     os.makedirs(OUT_NMAP_DIRECTORY)
-
             output = OUT_NMAP_DIRECTORY + "output_" + fileNameIn.split("/")[-1] + "_.txt"
             command = "nmap -p " + ','.join([str(i) for i in ports]) + " -6 -iL " + fileNameIn + " -oN " + output
             log(command)
@@ -195,9 +190,9 @@ def getDateTime():
     return now.strftime("%d-%m-%Y_%H_%M_%S")
 
 
-def generateWordAdresses(prefix, fileNameIn, fileNameOut):
+def generateWordAddresses(prefix, fileNameIn, fileNameOut):
     global allCount
-    log("stat generateWordAdresses, prefix:" + str(prefix))
+    log("stat generateWordAddresses, prefix:" + str(prefix))
     f = open(fileNameIn)
     words = f.read().splitlines()
     ip = getIp(prefix).exploded
@@ -226,7 +221,7 @@ def generateWordAdresses(prefix, fileNameIn, fileNameOut):
             break
     writeToFile(out, fileNameOut)
     f.close()
-    log("end generateWordAdresses, prefix:" + str(prefix))
+    log("end generateWordAddresses, prefix:" + str(prefix))
 
 
 def log(text, file=0):
@@ -255,15 +250,15 @@ def geneareMac(prefix, fileNameOut):
     writeToFileItems(out, fileNameOut)
 
 
-def geneareMacAdresses():
-    log("start geneareMacAdresses")
+def geneareMacAddresses():
+    log("start geneareMacAddresses")
     f = open(FILE_MAC_PREFIX)
     line = f.readline().rstrip('\n')
     while line:
         mac = f.readline().rstrip('\n')
         geneareMac(mac, DATA_DIRECTORY + "mac.txt")
     f.close()
-    log("end geneareMacAdresses")
+    log("end geneareMacAddresses")
 
 
 def getIp(prefix):
@@ -294,18 +289,13 @@ def generateMacInIpv6(prefix, fileNameIn, fileNameOut):
     log("end generateMacInIpv6, prefix:" + str(prefix))
 
 
-global flag
-flag = False
-global threads
-threads = []
-
-
 def getAAAARecord(domain):
+    global outDomains
     try:
         result = dns.resolver.query(domain, 'AAAA')
         if result[0]:
             while True:
-                if flag == False:
+                if flagAAAA == False:
                     outDomains.append(result[0].address)
                     break
     except:
@@ -315,6 +305,9 @@ def getAAAARecord(domain):
 
 def parseDomain(fileNameIn, fileNameOut):
     global outDomains
+    global threads
+    global flagAAAA
+    flagAAAA = False
     outDomains = []
     log("stat generateParseDomain")
     f = open(fileNameIn)
@@ -324,14 +317,11 @@ def parseDomain(fileNameIn, fileNameOut):
     while domain:
         if (len(threads) <= 1000):
             i += 1
-            if progress % 1000 == 0:
-                print('progress=' + str(progress))
             if (len(outDomains) > COUNT_TO_WRITE):
-                print('writeToFile')
-                flag = True
+                flagAAAA = True
                 writeToFile(outDomains, fileNameOut)
                 outDomains = []
-                flag = False
+                flagAAAA = False
                 i = 0
             x = threading.Thread(target=getAAAARecord, args=(domain,))
             x.start()
@@ -359,30 +349,59 @@ def clear(dir):
                 shutil.rmtree(entry.path)
 
 
-parser = argparse.ArgumentParser(description='Command List')
+def forPrefixes(method):
+    global allCount
+    allCount = 0
+    for prefix in prefixes:
+        if method == 'WordAddresses':
+            if args.wordAddresses != None:
+                generateWordAddresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + "WordAddresses.txt")
+                executeNmap(OUT_DIRECTORY + "WordAddresses.txt", ports)
+        if method == 'MacInIpv6':
+            if args.macInIpv6 != None:
+                generateMacInIpv6(prefix, DATA_DIRECTORY + "mac.txt",
+                                  OUT_DIRECTORY + "MacInIpv6.txt")
+                executeNmap(OUT_DIRECTORY + "MacInIpv6.txt", ports)
+        if method == 'ServicePort':
+            if args.servicePort != None:
+                generateServicePort(prefix, OUT_DIRECTORY + "ServicePort.txt")
+                executeNmap(OUT_DIRECTORY + "ServicePort.txt", ports)
+        if method == 'Lowbyte':
+            if args.lowbyte != None:
+                generateLowbyte(prefix, OUT_DIRECTORY + "Lowbyte.txt")
+                executeNmap(OUT_DIRECTORY + "Lowbyte.txt", ports)
+        if method == 'Ipv4InIpv6':
+            if args.ipv4InIpv6 != None:
+                generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + "Ipv4InIpv6.txt")
+                executeNmap(OUT_DIRECTORY + "Ipv4InIpv6.txt", ports)
+        if allCount >= LIMIT_GENERATION:
+            break
 
-parser.add_argument('-wordAdresses', nargs='*', help="Generate wordAdresses template")
-parser.add_argument("-macInIpv6", nargs='*', help="Generate macInIpv6 template")
-parser.add_argument("-servicePort", nargs='*', help="Generate servicePort template")
-parser.add_argument("-lowbyte", nargs='*', help="Generate lowbyte template")
-parser.add_argument("-ipv4InIpv6", nargs='*', help="Generate ipv4InIpv6 template")
-parser.add_argument("-parseDomain", nargs='*', help="Generate domain template")
-parser.add_argument("-ports", nargs='?', help="List of ports 80,443")
-parser.add_argument("-geneareMacAdresses", nargs='*', help="Generate domain template")
-parser.add_argument("-clearOutput", nargs='*', help="clear output directory")
-parser.add_argument("-clearOutputNmap", nargs='*', help="clear output nmap directory")
-parser.add_argument("-countToWrite", nargs='*', help="count buffer line to write to file")
-parser.add_argument("-nmapScan", nargs='*', help="-nmapScan <directory>   Nmap custom scan all files in directory ")
-# parser.add_argument("-nmapParameters", nargs='*', help="Parameters to the nmap command, example: -nmapParameters '\-sS -T5'")
+
+parser = argparse.ArgumentParser(description='Command List')
+parser.add_argument('-wordAddresses', nargs='*', help="Use method wordAddresses to generate")
+parser.add_argument("-macInIpv6", nargs='*', help="Use method macInIpv6 to generate")
+parser.add_argument("-servicePort", nargs='*', help="Use method servicePort to generate")
+parser.add_argument("-lowbyte", nargs='*', help="Use method lowbyte to generate")
+parser.add_argument("-ipv4InIpv6", nargs='*', help="Use method ipv4InIpv6 to generate")
+parser.add_argument("-generateMacAddresses", nargs='*', help="Generate a list of mac addresses")
+
+parser.add_argument("-parseDomain", nargs='*', help="Parse IPv6 list from domain list data/domains.txt")
+
+parser.add_argument("-ports", nargs='?', help="list of ports that will be used in the scanner, example:-ports 80,443")
+
+parser.add_argument("-clearOutput", nargs='*', help="Сlear output directory")
+parser.add_argument("-clearOutputNmap", nargs='*', help="Сlear output nmap directory")
+parser.add_argument("-countToWrite", nargs='*', help="Buffer addresses for writing, default 1000")
+
+parser.add_argument("-nmapScan", nargs='*',
+                    help="-nmapScan <directory> Nmap custom, scan all files in directory, default <directory> : out ")
 parser.add_argument("-executeNmap", nargs='*',
-                    help="-executeNmap 0|1 scan ipv6 adress after generate? 0 - no, 1 - yes, default 0")
+                    help="-executeNmap 0|1 scan ipv6 addresses after generate? 0 - no, 1 - yes, default 0")
 parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")
 
-# -clearOutput -clearOutputNmap -ports 80,443 -wordAdresses -macInIpv6 -servicePort -lowbyte -ipv4InIpv6 -parseDomain -geneareMacAdresses
-# -wordAdresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6
-# -wordAdresses -servicePort -lowbyte -ipv4InIpv6
-# grep -o "80/tcp open     http" outNmap.txt  | wc -l
-
+# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -parseDomain -ports 80,21,22,443 -clearOutput -clearOutputNmap -countToWrite 100 -limitGenerate 100 -executeNmap 0 -nmapScan out
+# -generateMacAddresses
 args = parser.parse_args()
 log("start program")
 ports = [80]
@@ -390,7 +409,10 @@ if args.ports != None:
     ports = args.ports.split(",")
 
 if args.nmapScan != None:
-    nmapDirectoryIn = args.nmapScan[0]
+    if args.nmapScan[0]:
+        nmapDirectoryIn = args.nmapScan[0]
+    else:
+        nmapDirectoryIn = OUT_DIRECTORY
     entries = os.scandir(nmapDirectoryIn)
     for entry in entries:
         if entry.name != ".gitignore":
@@ -408,52 +430,16 @@ if args.clearOutput != None:
 if args.clearOutputNmap != None:
     clear(OUT_NMAP_DIRECTORY)
 
-if args.geneareMacAdresses != None:
-    geneareMacAdresses()
+if args.generateMacAddresses != None:
+    geneareMacAddresses()
 
 if args.parseDomain != None:
-    parseDomain(FILE_DOMAINS, OUT_DIRECTORY + "addressesFromDomain.txt")
+    parseDomain(FILE_DOMAINS, FILE_PREFIX_LIST)
 
-
-def forPrefixes(method):
-    global allCount
-    dateDime = ''
-    allCount = 0
-    for prefix in prefixes:
-        if method == 'WordAdresses':
-            if args.wordAdresses != None:
-                generateWordAdresses(prefix, FILE_HEX_WORD, OUT_DIRECTORY + dateDime + "WordAdresses.txt")
-                executeNmap(OUT_DIRECTORY + dateDime + "WordAdresses.txt", ports)
-        if method == 'MacInIpv6':
-            if args.macInIpv6 != None:
-                generateMacInIpv6(prefix, DATA_DIRECTORY + dateDime + "mac.txt",
-                                  OUT_DIRECTORY + dateDime + "MacInIpv6.txt")
-                executeNmap(OUT_DIRECTORY + dateDime + "MacInIpv6.txt", ports)
-        if method == 'ServicePort':
-            if args.servicePort != None:
-                generateServicePort(prefix, OUT_DIRECTORY + dateDime + "ServicePort.txt")
-                executeNmap(OUT_DIRECTORY + dateDime + "ServicePort.txt", ports)
-        if method == 'Lowbyte':
-            if args.lowbyte != None:
-                generateLowbyte(prefix, OUT_DIRECTORY + dateDime + "Lowbyte.txt")
-                executeNmap(OUT_DIRECTORY + dateDime + "Lowbyte.txt", ports)
-        if method == 'Ipv4InIpv6':
-            if args.ipv4InIpv6 != None:
-                generateIpv4InIpv6(prefix, 255, 255, 255, 255, OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt")
-                executeNmap(OUT_DIRECTORY + dateDime + "Ipv4InIpv6.txt", ports)
-        if allCount >= LIMIT_GENERATION:
-            break
-
-
-global prefixes
-if args.wordAdresses != None or args.macInIpv6 != None or args.servicePort != None or args.lowbyte != None or args.ipv4InIpv6 != None:
+if args.wordAddresses != None or args.macInIpv6 != None or args.servicePort != None or args.lowbyte != None or args.ipv4InIpv6 != None:
     prefixes = readPrefixes(FILE_PREFIX_LIST)
-    forPrefixes('WordAdresses')
+    forPrefixes('WordAddresses')
     forPrefixes('MacInIpv6')
     forPrefixes('ServicePort')
     forPrefixes('Lowbyte')
     forPrefixes('Ipv4InIpv6')
-# dateDime = (str(prefix).translate({ord(':'): None, ord('/'): None})) + "__" + getDateTime()
-# os.mkdir(OUT_DIRECTORY + dateDime)
-# os.mkdir(OUT_NMAP_DIRECTORY + dateDime)
-# dateDime = dateDime + "/"

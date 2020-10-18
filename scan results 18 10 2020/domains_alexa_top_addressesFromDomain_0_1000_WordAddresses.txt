@@ -1,0 +1,11 @@
+# Nmap 7.80 scan initiated Sun Oct 18 22:39:05 2020 as: nmap -p 21,22,80,135 -6 -iL dataIn/domains_alexa_top_addressesFromDomain_0_1000_WordAddresses.txt -oN outNmap//domains_alexa_top_addressesFromDomain_0_1000_WordAddresses.txt --stats-every 60s --min-parallelism 100000 -T5 -sS
+Nmap scan report for tunnel414316.tunnel.tserv24.sto1.ipv6.he.net (2001:470:27:6e9::1)
+Host is up (0.023s latency).
+
+PORT    STATE  SERVICE
+21/tcp  closed ftp
+22/tcp  open   ssh
+80/tcp  closed http
+135/tcp closed msrpc
+
+# Nmap done at Sun Oct 18 22:40:38 2020 -- 100181 IP addresses (1 host up) scanned in 93.18 seconds

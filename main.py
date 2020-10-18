@@ -15,9 +15,16 @@ DATA_DIRECTORY = "data/"
 
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
 FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_last_1000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_0_1000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_1000_2000.txt"
+
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
-FILE_DOMAINS = DATA_DIRECTORY + "domains.txt"
+FILE_DOMAINS = DATA_DIRECTORY + "domains_alexa_top.txt"
+FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
 
 global allCount
 global prefixes
@@ -89,7 +96,8 @@ def readPrefixes(fileName):
     prefixes = f.readlines()
     f.close()
     for i in range(len(prefixes)):
-        prefixes[i] = ipaddress.IPv6Interface(prefixes[i][:-1])
+        if len(prefixes[i]) >= 2:
+            prefixes[i] = ipaddress.IPv6Interface(prefixes[i][:-1])
     return set(prefixes)
 
 
@@ -170,7 +178,7 @@ def mac2eui64(mac, prefix=None):
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
     command = "nmap -p " + ','.join(
         [str(i) for i in
-         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS"
+         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS -PN -n"
     log(command)
     print(command)
     os.system(command)
@@ -179,8 +187,9 @@ def executeNmapPath(entryFileNameIn, pathDirOut, ports):
 def executeNmap(fileNameIn, ports):
     if args.executeNmap != None:
         if args.executeNmap[0] == '1':
-            output = OUT_NMAP_DIRECTORY + "output_" + fileNameIn.split("/")[-1] + "_.txt"
-            command = "nmap -p " + ','.join([str(i) for i in ports]) + " -6 -iL " + fileNameIn + " -oN " + output
+            output = OUT_NMAP_DIRECTORY + fileNameIn.split("/")[-1]
+            command = "nmap -p " + ','.join([str(i) for i in
+                                             ports]) + " -6 -iL " + fileNameIn + " -oN " + output + " --stats-every 60s --min-parallelism 100000 -T5 -sS"
             log(command)
             os.system(command)
 
@@ -315,7 +324,7 @@ def parseDomain(fileNameIn, fileNameOut):
     i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 1000):
+        if (len(threads) <= 500):
             i += 1
             if (len(outDomains) > COUNT_TO_WRITE):
                 flagAAAA = True
@@ -329,8 +338,9 @@ def parseDomain(fileNameIn, fileNameOut):
             threads.append(x)
             domain = f.readline().rstrip('\n')
             for idx, val in enumerate(threads):
-                if val.isAlive() == False:
-                    threads.pop(idx)
+                if val:
+                    if val.isAlive() == False:
+                        threads.pop(idx)
 
     f.close()
     writeToFile(outDomains, fileNameOut)
@@ -399,8 +409,9 @@ parser.add_argument("-nmapScan", nargs='*',
 parser.add_argument("-executeNmap", nargs='*',
                     help="-executeNmap 0|1 scan ipv6 addresses after generate? 0 - no, 1 - yes, default 0")
 parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")
-
-# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -parseDomain -ports 80,21,22,443 -clearOutput -clearOutputNmap -countToWrite 100 -limitGenerate 100 -executeNmap 0 -nmapScan out
+# -nmapScan dataIn
+# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 100 -limitGenerate 100 -executeNmap 0 -nmapScan out
+# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 100 -limitGenerate 100000 -executeNmap 0
 # -generateMacAddresses
 args = parser.parse_args()
 log("start program")

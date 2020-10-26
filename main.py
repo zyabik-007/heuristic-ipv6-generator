@@ -13,20 +13,16 @@ OUT_NMAP_DIRECTORY = "outNmap/"
 OUT_DIRECTORY = "out/"
 DATA_DIRECTORY = "data/"
 
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_last_1000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_0_10000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_10000_20000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIpv6Addresses.txt"
-FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIPV6.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIPV6_zakres_1.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIPV6_zakres_2.txt"
+
+FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIPV6_zakres_1.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIPV6_zakres_2.txt"
 
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains_alexa_top.txt"
-# FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
+FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
 
 global allCount
 global prefixes
@@ -417,8 +413,11 @@ parser.add_argument("-nmapScan", nargs='*',
 parser.add_argument("-executeNmap", nargs='*',
                     help="-executeNmap 0|1 scan ipv6 addresses after generate? 0 - no, 1 - yes, default 0")
 parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")
+parser.add_argument("-prefixFile", nargs='*',
+                    help="File to the prefix list. Example: '-prefixFile data/domains_alexa_topIPV6.txt'")
+
 # -nmapScan dataIn
-# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 100 -limitGenerate 100 -executeNmap 0 -nmapScan out
+# -prefixFile data/domains_alexa_topIPV6_zakres_1.txt -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 131072 -executeNmap 0 -nmapScan out
 # -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 262144 -executeNmap 0
 # -generateMacAddresses
 args = parser.parse_args()
@@ -426,6 +425,9 @@ log("start program")
 ports = [80]
 if args.ports != None:
     ports = args.ports.split(",")
+
+if args.prefixFile != None:
+    FILE_PREFIX_LIST = args.prefixFile[0]
 
 if args.nmapScan != None:
     if args.nmapScan[0]:

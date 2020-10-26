@@ -326,7 +326,7 @@ def parseDomain(fileNameIn, fileNameOut):
     # i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 500):
+        if (len(threads) <= 400):
             # i += 1
             # i = 0
             try:

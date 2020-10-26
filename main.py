@@ -326,7 +326,7 @@ def parseDomain(fileNameIn, fileNameOut):
     # i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 10000):
+        if (len(threads) <= 1000):
             # i += 1
                 # i = 0
             x = threading.Thread(target=getAAAARecord, args=(domain,))

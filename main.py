@@ -14,7 +14,7 @@ OUT_DIRECTORY = "out/"
 DATA_DIRECTORY = "data/"
 
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
-FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_last_1000.txt"
@@ -326,7 +326,7 @@ def parseDomain(fileNameIn, fileNameOut):
     # i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 1000):
+        if (len(threads) <= 500):
             # i += 1
                 # i = 0
             x = threading.Thread(target=getAAAARecord, args=(domain,))

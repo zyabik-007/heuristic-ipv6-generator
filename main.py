@@ -195,7 +195,6 @@ def executeNmap(fileNameIn, ports):
 def getDateTime():
     now = datetime.now()
     return now.strftime("%d-%m-%Y_%H_%M_%S")
-o
 
 def generateWordAddresses(prefix, fileNameIn, fileNameOut):
     global allCount

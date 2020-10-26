@@ -1,2 +1,0 @@
-# Nmap 7.80 scan initiated Sun Oct 18 22:24:29 2020 as: nmap -p 21,22,80,135 -6 -iL dataIn/top_10_mln_domains_addressesFromDomain_1000_2000_MacInIpv6.txt -oN outNmap//top_10_mln_domains_addressesFromDomain_1000_2000_MacInIpv6.txt --stats-every 60s --min-parallelism 100000 -T5 -sS
-# Nmap done at Sun Oct 18 22:25:57 2020 -- 100090 IP addresses (0 hosts up) scanned in 88.08 seconds

@@ -328,12 +328,16 @@ def parseDomain(fileNameIn, fileNameOut):
     while domain:
         if (len(threads) <= 500):
             # i += 1
-                # i = 0
-            x = threading.Thread(target=getAAAARecord, args=(domain,))
-            x.start()
-            progress += 1
-            threads.append(x)
-            domain = f.readline().rstrip('\n')
+            # i = 0
+            try:
+                x = threading.Thread(target=getAAAARecord, args=(domain,))
+                x.start()
+                progress += 1
+                threads.append(x)
+                domain = f.readline().rstrip('\n')
+            except:
+                i = 0
+                print("error Thread")
 
         if (len(outDomains) > COUNT_TO_WRITE):
             flagAAAA = True

@@ -399,15 +399,11 @@ parser.add_argument("-servicePort", nargs='*', help="Use method servicePort to g
 parser.add_argument("-lowbyte", nargs='*', help="Use method lowbyte to generate")
 parser.add_argument("-ipv4InIpv6", nargs='*', help="Use method ipv4InIpv6 to generate")
 parser.add_argument("-generateMacAddresses", nargs='*', help="Generate a list of mac addresses")
-
 parser.add_argument("-parseDomain", nargs='*', help="Parse IPv6 list from domain list data/domains.txt")
-
 parser.add_argument("-ports", nargs='?', help="list of ports that will be used in the scanner, example:-ports 80,443")
-
 parser.add_argument("-clearOutput", nargs='*', help="Сlear output directory")
 parser.add_argument("-clearOutputNmap", nargs='*', help="Сlear output nmap directory")
 parser.add_argument("-countToWrite", nargs='*', help="Buffer addresses for writing, default 1000")
-
 parser.add_argument("-nmapScan", nargs='*',
                     help="-nmapScan <directory> Nmap custom, scan all files in directory, default <directory> : out ")
 parser.add_argument("-executeNmap", nargs='*',
@@ -417,7 +413,7 @@ parser.add_argument("-prefixFile", nargs='*',
                     help="File to the prefix list. Example: '-prefixFile data/domains_alexa_topIPV6.txt'")
 
 # -nmapScan dataIn
-# -prefixFile data/domains_alexa_topIPV6_zakres_1.txt -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 131072 -executeNmap 0 -nmapScan out
+# -prefixFile data/domains_alexa_topIPV6_zakres_2.txt -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 131072 -executeNmap 0
 # -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 262144 -executeNmap 0
 # -generateMacAddresses
 args = parser.parse_args()

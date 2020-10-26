@@ -176,7 +176,7 @@ def mac2eui64(mac, prefix=None):
 def executeNmapPath(entryFileNameIn, pathDirOut, ports):
     command = "nmap -p " + ','.join(
         [str(i) for i in
-         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS -PN"
+         ports]) + " -6 -iL " + entryFileNameIn.path + " -oN " + pathDirOut + "/" + entryFileNameIn.name + " --stats-every 60s --min-parallelism 100000 -T5 -sS"
     log(command)
     print(command)
     os.system(command)
@@ -195,7 +195,7 @@ def executeNmap(fileNameIn, ports):
 def getDateTime():
     now = datetime.now()
     return now.strftime("%d-%m-%Y_%H_%M_%S")
-
+o
 
 def generateWordAddresses(prefix, fileNameIn, fileNameOut):
     global allCount

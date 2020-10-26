@@ -21,12 +21,12 @@ DATA_DIRECTORY = "data/"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_0_10000.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_10000_20000.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIpv6Addresses.txt"
-FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIpv6Addresses.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIPV6.txt"
 
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains_alexa_top.txt"
-FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
+# FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
 
 global allCount
 global prefixes

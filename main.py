@@ -16,10 +16,12 @@ DATA_DIRECTORY = "data/"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "ipv6-prefix.txt"
 FILE_PREFIX_LIST = DATA_DIRECTORY + "addressesFromDomain.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
-FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_0_1000.txt"
 # FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_addressesFromDomain_last_1000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_0_1000.txt"
-# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_1000_2000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_0_10000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domains_addressesFromDomain_10000_20000.txt"
+# FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIpv6Addresses.txt"
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIpv6Addresses.txt"
 
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
@@ -321,26 +323,28 @@ def parseDomain(fileNameIn, fileNameOut):
     log("stat generateParseDomain")
     f = open(fileNameIn)
     domain = f.readline().rstrip('\n')
-    i = 0
+    # i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 500):
-            i += 1
-            if (len(outDomains) > COUNT_TO_WRITE):
-                flagAAAA = True
-                writeToFile(outDomains, fileNameOut)
-                outDomains = []
-                flagAAAA = False
-                i = 0
+        if (len(threads) <= 400):
+            # i += 1
+                # i = 0
             x = threading.Thread(target=getAAAARecord, args=(domain,))
             x.start()
             progress += 1
             threads.append(x)
             domain = f.readline().rstrip('\n')
-            for idx, val in enumerate(threads):
-                if val:
-                    if val.isAlive() == False:
-                        threads.pop(idx)
+
+        if (len(outDomains) > COUNT_TO_WRITE):
+            flagAAAA = True
+            writeToFile(outDomains, fileNameOut)
+            outDomains = []
+            flagAAAA = False
+
+        for idx, val in enumerate(threads):
+            if val:
+                if val.isAlive() == False:
+                    threads.pop(idx)
 
     f.close()
     writeToFile(outDomains, fileNameOut)
@@ -411,7 +415,7 @@ parser.add_argument("-executeNmap", nargs='*',
 parser.add_argument("-limitGenerate", nargs='*', help="Limit of generate IPv6 addresses")
 # -nmapScan dataIn
 # -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 100 -limitGenerate 100 -executeNmap 0 -nmapScan out
-# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 100 -limitGenerate 100000 -executeNmap 0
+# -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 262144 -executeNmap 0
 # -generateMacAddresses
 args = parser.parse_args()
 log("start program")

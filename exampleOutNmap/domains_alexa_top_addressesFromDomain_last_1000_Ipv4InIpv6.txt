@@ -1,0 +1,2 @@
+# Nmap 7.80 scan initiated Sat Oct 17 22:47:39 2020 as: nmap -p 80 -6 -iL dataIn/domains_alexa_top_addressesFromDomain_last_1000_Ipv4InIpv6.txt -oN outNmap//domains_alexa_top_addressesFromDomain_last_1000_Ipv4InIpv6.txt --stats-every 60s --min-parallelism 100000 -T5 -sS
+# Nmap done at Sat Oct 17 22:49:05 2020 -- 100091 IP addresses (0 hosts up) scanned in 86.63 seconds

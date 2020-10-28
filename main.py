@@ -6,7 +6,7 @@ import ipaddress
 import argparse
 import dns.resolver
 
-COUNT_TO_WRITE = 1000
+COUNT_TO_WRITE = 100
 LIMIT_GENERATION = float('inf')
 
 OUT_NMAP_DIRECTORY = "outNmap/"
@@ -19,10 +19,12 @@ FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_topIPV6_zakres_2.txt"
 FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIPV6_zakres_1.txt"
 FILE_PREFIX_LIST = DATA_DIRECTORY + "top_10_mln_domainsIPV6_zakres_2.txt"
 
+FILE_PREFIX_LIST = DATA_DIRECTORY + "domains_alexa_top_2.txt"
+
 FILE_HEX_WORD = DATA_DIRECTORY + "hex-word.txt"
 FILE_MAC_PREFIX = DATA_DIRECTORY + "mac-prefix.txt"
 FILE_DOMAINS = DATA_DIRECTORY + "domains_alexa_top.txt"
-FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
+# FILE_DOMAINS = DATA_DIRECTORY + "top_10_mln_domains.txt"
 
 global allCount
 global prefixes
@@ -196,6 +198,7 @@ def getDateTime():
     now = datetime.now()
     return now.strftime("%d-%m-%Y_%H_%M_%S")
 
+
 def generateWordAddresses(prefix, fileNameIn, fileNameOut):
     global allCount
     log("stat generateWordAddresses, prefix:" + str(prefix))
@@ -297,12 +300,14 @@ def generateMacInIpv6(prefix, fileNameIn, fileNameOut):
 
 def getAAAARecord(domain):
     global outDomains
+    global flagAAAA
     try:
         result = dns.resolver.query(domain, 'AAAA')
         if result[0]:
             while True:
                 if flagAAAA == False:
                     outDomains.append(result[0].address)
+                    del result
                     break
     except:
         return None
@@ -318,12 +323,9 @@ def parseDomain(fileNameIn, fileNameOut):
     log("stat generateParseDomain")
     f = open(fileNameIn)
     domain = f.readline().rstrip('\n')
-    # i = 0
     progress = 0
     while domain:
-        if (len(threads) <= 400):
-            # i += 1
-            # i = 0
+        if (len(threads) <= 10):
             try:
                 x = threading.Thread(target=getAAAARecord, args=(domain,))
                 x.start()
@@ -331,7 +333,6 @@ def parseDomain(fileNameIn, fileNameOut):
                 threads.append(x)
                 domain = f.readline().rstrip('\n')
             except:
-                i = 0
                 print("error Thread")
 
         if (len(outDomains) > COUNT_TO_WRITE):
@@ -414,7 +415,7 @@ parser.add_argument("-prefixFile", nargs='*',
 # -nmapScan dataIn
 # -prefixFile data/domains_alexa_topIPV6_zakres_2.txt -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 131072 -executeNmap 0
 # -wordAddresses -servicePort -lowbyte -ipv4InIpv6 -macInIpv6 -ports 80,21,22,443 -countToWrite 1000 -limitGenerate 262144 -executeNmap 0
-# -generateMacAddresses
+# -parseDomain -prefixFile domains_alexa_top_2.txt
 args = parser.parse_args()
 log("start program")
 ports = [80]
